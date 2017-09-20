@@ -2,6 +2,9 @@ easy_admin:
     entities:
         Category:
             class: AppBundle\Entity\Category
+            list:
+                fields:
+                    - 'name'
 
         Wallpaper:
             class: AppBundle\Entity\Wallpaper
@@ -16,6 +19,6 @@ easy_admin:
                     - { property: 'image', type: 'image', base_path: '/images/' }
             form:
                 fields:
-                    - { property: "file", type: "file", label: "Images" }
+                    - { property: "file", type: 'AppBundle\Form\Type\UploadedFileType', label: "Images" }
                     - 'slug'
                     - 'category'

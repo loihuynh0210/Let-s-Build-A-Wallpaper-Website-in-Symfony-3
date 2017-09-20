@@ -2,8 +2,8 @@
 
 namespace AppBundle\Entity;
 
+use AppBundle\Model\FileInterface;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * Wallpaper
@@ -30,9 +30,7 @@ class Wallpaper
     private $category;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(type="string")
+     * @var FileInterface
      */
     private $file;
 
@@ -87,7 +85,7 @@ class Wallpaper
      * @param Category $category
      * @return Wallpaper
      */
-    public function setCategory(Category $category)
+    public function setCategory(Category $category = null)
     {
         $this->category = $category;
 
@@ -95,7 +93,7 @@ class Wallpaper
     }
 
     /**
-     * @return UploadedFile
+     * @return FileInterface
      */
     public function getFile()
     {
@@ -103,10 +101,10 @@ class Wallpaper
     }
 
     /**
-     * @param File $file
+     * @param FileInterface $file
      * @return Wallpaper
      */
-    public function setFile(File $file)
+    public function setFile(FileInterface $file)
     {
         $this->file = $file;
 

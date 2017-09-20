@@ -6,21 +6,31 @@ use AppBundle\Entity\Category;
 use AppBundle\Entity\Wallpaper;
 use AppBundle\Event\Listener\WallpaperUploadListener;
 use AppBundle\Service\FileMover;
+use AppBundle\Model\FileInterface;
+use AppBundle\Service\ImageFileDimensionsHelper;
+use AppBundle\Service\WallpaperFilePathHelper;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class WallpaperUploadListenerSpec extends ObjectBehavior
 {
     private $fileMover;
+    private $wallpaperFilePathHelper;
+    private $imageFileDimensionsHelper;
 
-    function let(FileMover $fileMover)
+    function let(
+        FileMover $fileMover,
+        WallpaperFilePathHelper $wallpaperFilePathHelper,
+        ImageFileDimensionsHelper $imageFileDimensionsHelper
+    )
     {
-        $this->beConstructedWith($fileMover);
+        $this->beConstructedWith($fileMover, $wallpaperFilePathHelper, $imageFileDimensionsHelper);
 
         $this->fileMover = $fileMover;
+        $this->wallpaperFilePathHelper = $wallpaperFilePathHelper;
+        $this->imageFileDimensionsHelper = $imageFileDimensionsHelper;
     }
 
     function it_is_initializable()
@@ -43,25 +53,40 @@ class WallpaperUploadListenerSpec extends ObjectBehavior
     }
 
     function it_can_prePersist(
-        LifecycleEventArgs $eventArgs
+        LifecycleEventArgs $eventArgs,
+        FileInterface $file
     )
     {
         $fakeTempPath = '/tmp/some.file';
-        $fakeRealPath = '/path/to/my/project/some.file';
+        $fakeFilename = 'some.file';
 
-        $uploadedFile = new UploadedFile(
-            $fakeTempPath,
-            'some.file'
-        );
+        $file->getPathname()->willReturn($fakeTempPath);
+        $file->getFilename()->willReturn($fakeRealPath);
 
         $wallpaper = new Wallpaper();
-        $wallpaper->setFile($uploadedFile);
+        $wallpaper->setFile($file->getWrappedObject());
 
         $eventArgs->getEntity()->willReturn($wallpaper);
 
-        $this->prePersist($eventArgs);
+        $fakeNewFileLocation = '/some/new/fake/' . $fakeFilename;
+        $this
+            ->wallpaperFilePathHelper
+            ->getNewFilePath($fakeFilename)
+            ->willReturn($fakeNewFileLocation)
+        ;
+
+        $this->imageFileDimensionsHelper->setImageFilePath($fakeNewFileLocation)->shouldBeCalled();
+        $this->imageFileDimensionsHelper->getWidth()->willReturn(1024);
+        $this->imageFileDimensionsHelper->getHeight()->willReturn(768);
+
+        $outcome = $this->prePersist($eventArgs);
 
         $this->fileMover->move($fakeTempPath, $fakeRealPath)->shouldHaveBeenCalled();
+
+        $outcome->shouldReturnAnInstanceOf(Wallpaper::class);
+        $outcome->getFilename()->shouldReturn($fakeFilename);
+        $outcome->getWidth()->shouldReturn(1024);
+        $outcome->getHeight()->shouldReturn(768);
     }
 
     function it_can_preUpdate(PreUpdateEventArgs $eventArgs)

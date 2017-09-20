@@ -4,6 +4,7 @@ namespace AppBundle\Event\Listener;
 
 use AppBundle\Entity\Wallpaper;
 use AppBundle\Service\FileMover;
+use AppBundle\Service\ImageFileDimensionsHelper;
 use AppBundle\Service\WallpaperFilePathHelper;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
@@ -18,11 +19,20 @@ class WallpaperUploadListener
      * @var WallpaperFilePathHelper
      */
     private $wallpaperFilePathHelper;
+    /**
+     * @var ImageFileDimensionsHelper
+     */
+    private $imageFileDimensionsHelper;
 
-    public function __construct(FileMover $fileMover, WallpaperFilePathHelper $wallpaperFilePathHelper)
+    public function __construct(
+        FileMover $fileMover,
+        WallpaperFilePathHelper $wallpaperFilePathHelper,
+        ImageFileDimensionsHelper $imageFileDimensionsHelper
+    )
     {
         $this->fileMover = $fileMover;
         $this->wallpaperFilePathHelper = $wallpaperFilePathHelper;
+        $this->imageFileDimensionsHelper = $imageFileDimensionsHelper;
     }
 
     public function prePersist(LifecycleEventArgs $eventArgs)
@@ -41,32 +51,20 @@ class WallpaperUploadListener
         // get access to the file
         $file = $entity->getFile();
 
-        $temporaryLocation = $file->getPathname();
-
         $newFileLocation = $this->wallpaperFilePathHelper->getNewFilePath(
-            $file->getClientOriginalName()
+            $file->getFilename()
         );
 
-        // todo:
-        //   - move the uploaded file
-        $this->fileMover->move($temporaryLocation, $newFileLocation);
+        // got here
+        $this->fileMover->move($file->getPathname(), $newFileLocation);
 
+        $this->imageFileDimensionsHelper->setImageFilePath($newFileLocation);
 
-        //   - update the entity with additional info
-        [
-            0 => $width,
-            1 => $height,
-        ] = getimagesize($newFileLocation);
-
-        $entity
-            ->setFilename(
-                $file->getClientOriginalName()
-            )
-            ->setHeight($height)
-            ->setWidth($width)
+        return $entity
+            ->setFilename($file->getFilename())
+            ->setHeight($this->imageFileDimensionsHelper->getHeight())
+            ->setWidth($this->imageFileDimensionsHelper->getWidth())
         ;
-
-        return true;
     }
 
     public function preUpdate(PreUpdateEventArgs $eventArgs)
