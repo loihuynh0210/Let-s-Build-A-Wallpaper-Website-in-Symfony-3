@@ -19,6 +19,6 @@ easy_admin:
                     - { property: 'image', type: 'image', base_path: '/images/' }
             form:
                 fields:
-                    - { property: "file", type: 'AppBundle\Form\Type\UploadedFileType', label: "Images" }
+                    - { property: "file", type: 'AppBundle\Form\Type\UploadedFileType', type_options: { required: true } }
                     - 'slug'
                     - 'category'
