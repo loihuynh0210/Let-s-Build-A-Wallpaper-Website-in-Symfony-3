@@ -8,7 +8,6 @@
 
 namespace spec\AppBundle\Service;
 
-
 use AppBundle\Service\ImageFileDimensionsHelper;
 use PhpSpec\ObjectBehavior;
 

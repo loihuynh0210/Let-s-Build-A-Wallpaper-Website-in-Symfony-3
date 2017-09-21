@@ -37,7 +37,6 @@ class SymfonyUploadedFile implements FileInterface
         return $this;
     }
 
-
     public function getPathname()
     {
         return $this->file->getPathname();

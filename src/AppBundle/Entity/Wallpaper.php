@@ -111,8 +111,6 @@ class Wallpaper
         return $this;
     }
 
-
-
     /**
      * Set filename
      *

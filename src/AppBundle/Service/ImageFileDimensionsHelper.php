@@ -8,16 +8,13 @@ namespace AppBundle\Service;
  */
 class ImageFileDimensionsHelper
 {
-    /**
-     * @var array $imageSizeAttributes
-     */
+    private $filepath;
     private $imageSizeAttributes;
 
-    /**
-     * @param string $filepath
-     */
     public function setImageFilePath(string $filepath)
     {
+        $this->filepath = $filepath;
+
         $this->imageSizeAttributes = getimagesize($filepath);
     }
 

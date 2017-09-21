@@ -61,7 +61,7 @@ class WallpaperUploadListenerSpec extends ObjectBehavior
         $fakeFilename = 'some.file';
 
         $file->getPathname()->willReturn($fakeTempPath);
-        $file->getFilename()->willReturn($fakeRealPath);
+        $file->getFilename()->willReturn($fakeFilename);
 
         $wallpaper = new Wallpaper();
         $wallpaper->setFile($file->getWrappedObject());
@@ -81,7 +81,7 @@ class WallpaperUploadListenerSpec extends ObjectBehavior
 
         $outcome = $this->prePersist($eventArgs);
 
-        $this->fileMover->move($fakeTempPath, $fakeRealPath)->shouldHaveBeenCalled();
+        $this->fileMover->move($fakeTempPath, $fakeNewFileLocation)->shouldHaveBeenCalled();
 
         $outcome->shouldReturnAnInstanceOf(Wallpaper::class);
         $outcome->getFilename()->shouldReturn($fakeFilename);

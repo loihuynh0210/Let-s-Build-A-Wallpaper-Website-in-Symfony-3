@@ -65,6 +65,7 @@ class WallpaperUploadListener
             ->setHeight($this->imageFileDimensionsHelper->getHeight())
             ->setWidth($this->imageFileDimensionsHelper->getWidth())
         ;
+
     }
 
     public function preUpdate(PreUpdateEventArgs $eventArgs)
